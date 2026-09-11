@@ -1,5 +1,7 @@
 node_modules
 out/
+dist/
+public/build/
 JSONResults/
 api_old/
 old/
@@ -9,3 +11,8 @@ bundle.js.map
 mpv/
 package-lock.json
 .env
+.DS_Store
+*.log
+coverage/
+.turbo/
+.vite/
