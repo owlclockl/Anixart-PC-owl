@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 interface AnimePosterProps {
   size: {
@@ -24,6 +24,9 @@ const AnimePoster: React.FC<AnimePosterProps> = ({
   zIndex = 0
 }) => {
   const [isLoading, setIsLoading] = useState(true);
+  const [isInView, setIsInView] = useState(false);
+  const [hasError, setHasError] = useState(false);
+  const imgRef = useRef<HTMLDivElement>(null);
 
   const posterStyles = [
     { color: "", text: "", borderEnabled: false },
@@ -59,10 +62,30 @@ const AnimePoster: React.FC<AnimePosterProps> = ({
     },
   ];
 
-  const style = posterStyles[posterStyle];
+  const style = posterStyles[posterStyle] || posterStyles[0];
+
+  // Lazy loading with IntersectionObserver
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px' }
+    );
+
+    if (imgRef.current) {
+      observer.observe(imgRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <div
+      ref={imgRef}
       className="anime-poster"
       style={{
         '--width': `${size.width}px`,
@@ -81,15 +104,28 @@ const AnimePoster: React.FC<AnimePosterProps> = ({
         {style.text}
       </div>
       <div className={`anime-poster-skeleton ${!isLoading ? 'hide' : ''}`}></div>
-      <img
-        className={shadow ? 'anime-poster-shadow' : ''}
-        width={size.width}
-        height={size.height}
-        src={posterInfo.poster}
-        alt={posterInfo.title}
-        onLoad={() => setIsLoading(false)}
-        style={{ opacity: isLoading ? 0 : 1 }}
-      />
+      {isInView ? (
+        <img
+          className={shadow ? 'anime-poster-shadow' : ''}
+          width={size.width}
+          height={size.height}
+          src={hasError ? './assets/images/no_image.jpg' : posterInfo.poster}
+          alt={posterInfo.title}
+          loading="lazy"
+          decoding="async"
+          onLoad={() => setIsLoading(false)}
+          onError={() => {
+            setHasError(true);
+            setIsLoading(false);
+          }}
+          style={{ 
+            opacity: isLoading ? 0 : 1,
+            transition: 'opacity 0.3s ease',
+          }}
+        />
+      ) : (
+        <div style={{ width: size.width, height: size.height }} />
+      )}
     </div>
   );
 };

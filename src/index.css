@@ -143,9 +143,9 @@ body {
 .main-content {
   display: flex;
   flex-direction: row;
-  height: calc(100vh - 22px);
+  height: calc(100vh - 32px);
   width: 100vw;
-  margin-top: 22px;
+  margin-top: 32px;
   position: relative;
   background-color: var(--background-color);
   overflow: hidden;
@@ -154,6 +154,28 @@ body {
 .fullscreen {
   margin-top: 0px;
   height: 100vh;
+}
+
+.amoled {
+  --background-color: #000000 !important;
+  --alt-background-color: #0a0a0a !important;
+  --skeleton-background-color: #111 !important;
+  --skeleton-animation-color: #1a1a1a !important;
+}
+
+/* Base button improved */
+.base-main-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 600;
+  transition: all 0.2s;
+  white-space: nowrap;
+  user-select: none;
+}
+.base-main-button:active {
+  transform: scale(0.98);
 }
 
 #viewport {

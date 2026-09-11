@@ -1,23 +1,39 @@
 import React from 'react';
-import Icon from '../elements/Icon';
+import { AppIcon, IconName } from '../ui/AppIcon';
+import { useNavigationStore } from '../../stores/navigation';
 
 interface LeftMenuButtonProps {
-  viewportComponentIndex: number;
-  icon: string;
-  selected: boolean;
+  routeName: import('../../stores/navigation').RouteName;
+  icon: IconName;
+  label: string;
+  selected?: boolean;
+  badge?: number;
+  showLabel?: boolean;
 }
 
 const LeftMenuButton: React.FC<LeftMenuButtonProps> = ({ 
-  viewportComponentIndex, 
+  routeName,
   icon, 
-  selected 
+  label,
+  selected,
+  badge,
+  showLabel = false
 }) => {
+  const { navigate, current } = useNavigationStore();
+  const isSelected = selected ?? current.name === routeName;
+
   return (
     <button 
-      className={`left-menu-button ${selected ? 'selected' : ''}`}
-      onClick={() => window.updateViewportComponent(viewportComponentIndex)}
+      className={`left-menu-button ${isSelected ? 'selected' : ''}`}
+      onClick={() => navigate(routeName)}
+      title={!showLabel ? label : undefined}
     >
-      <Icon src={icon} varColor="--main-text-color" size={{ width: 20, height: 20 }} />
+      <div className="left-menu-button-icon">
+        <AppIcon name={icon} size={20} strokeWidth={isSelected ? 2.5 : 2} />
+        {badge && badge > 0 && <span className="left-menu-badge">{badge}</span>}
+      </div>
+      {showLabel && <span className="left-menu-button-label">{label}</span>}
+      {isSelected && <div className="left-menu-selected-indicator" />}
     </button>
   );
 };

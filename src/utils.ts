@@ -204,14 +204,15 @@ const Utils = {
   },
 
   async checkGPUSupport() {
-    if (!navigator.gpu) {
+    // @ts-ignore - WebGPU types may not be available
+    if (!(navigator as any).gpu) {
       console.warn("WebGPU не поддерживается в этом браузере.");
       return false;
     }
 
-    return navigator.gpu
+    return (navigator as any).gpu
       .requestAdapter()
-      .then((adapter) => {
+      .then((adapter: any) => {
         return adapter !== null;
       })
       .catch(() => {
