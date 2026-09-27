@@ -27,17 +27,22 @@ jobs:
           node-version: 20
           cache: 'npm'
 
+      # deb и rpm мейкеры Electron Forge без этих утилит не работают
+      - name: Install Linux packaging tools
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y rpm fakeroot
+
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
       - name: Build Vite
         run: npm run build
 
+      # Для подписи кода под Windows добавьте сюда env с секретом сертификата:
+      #   env:
+      #     WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
       - name: Make (Electron Forge)
         run: npm run make
-        env:
-          # For Windows code signing if you have cert
-          # WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4

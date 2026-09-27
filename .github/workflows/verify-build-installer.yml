@@ -1,7 +1,7 @@
 name: Verify build-installer.bat
 
 # Гоняем сам батник на настоящей Windows, чтобы быть уверенными,
-# что сборка от исходников до установщика .exe реально работает.
+# что путь от исходников до установщика .exe реально работает.
 on:
   workflow_dispatch:
   push:
@@ -10,7 +10,8 @@ on:
       - '.github/workflows/verify-build-installer.yml'
 
 jobs:
-  windows-installer:
+  default-build:
+    name: Обычная сборка установщика
     runs-on: windows-latest
     timeout-minutes: 45
 
@@ -23,11 +24,15 @@ jobs:
         with:
           node-version: 20
 
-      - name: Run build-installer.bat
+      - name: Справка по параметрам
+        shell: cmd
+        run: build-installer.bat /help
+
+      - name: Сборка установщика
         shell: cmd
         run: build-installer.bat /ci
 
-      - name: Show build output
+      - name: Что получилось
         if: always()
         shell: cmd
         run: |
@@ -42,3 +47,28 @@ jobs:
           path: |
             out/make/**/*
           retention-days: 14
+
+  flags-build:
+    name: Сборка с флагами /clean /zip /x64
+    runs-on: windows-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Сборка с флагами
+        shell: cmd
+        run: build-installer.bat /ci /clean /zip /x64
+
+      - name: Что получилось
+        if: always()
+        shell: cmd
+        run: |
+          if exist out\make dir /s /b out\make
+          if exist build.log type build.log
