@@ -66,6 +66,13 @@ jobs:
         shell: cmd
         run: build-installer.bat /ci /clean /zip /x64
 
+      # dir вернёт ошибку, если файлов нет, значит шаг упадёт
+      - name: Установщик и портативный ZIP на месте
+        shell: cmd
+        run: |
+          dir out\make\squirrel.windows\x64\*.exe
+          dir out\make\*.zip
+
       - name: Что получилось
         if: always()
         shell: cmd
