@@ -21,11 +21,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # cache: 'npm' здесь нельзя: package-lock.json лежит в .gitignore,
+      # а без лок-файла шаг setup-node падает с ошибкой
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
 
       # deb и rpm мейкеры Electron Forge без этих утилит не работают
       - name: Install Linux packaging tools
