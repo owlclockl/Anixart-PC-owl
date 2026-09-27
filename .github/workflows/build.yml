@@ -43,7 +43,20 @@ jobs:
       #   env:
       #     WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
       - name: Make (Electron Forge)
+        if: runner.os == 'Windows'
         run: npm run make
+
+      # На Linux дополнительно вытаскиваем хвост ошибки в аннотацию,
+      # иначе причина падения deb/rpm мейкеров теряется в логах
+      - name: Make (Electron Forge)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run make 2>&1 | tee make-output.txt || {
+            echo "::error::$(tail -n 40 make-output.txt | tr '\n' ' ' | tail -c 1200)"
+            exit 1
+          }
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
