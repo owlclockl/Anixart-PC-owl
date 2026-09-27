@@ -1,0 +1,44 @@
+name: Verify build-installer.bat
+
+# Гоняем сам батник на настоящей Windows, чтобы быть уверенными,
+# что сборка от исходников до установщика .exe реально работает.
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'build-installer.bat'
+      - '.github/workflows/verify-build-installer.yml'
+
+jobs:
+  windows-installer:
+    runs-on: windows-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run build-installer.bat
+        shell: cmd
+        run: build-installer.bat /ci
+
+      - name: Show build output
+        if: always()
+        shell: cmd
+        run: |
+          if exist out\make dir /s /b out\make
+          if exist build.log type build.log
+
+      - name: Upload installer
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: anidesk-installer-${{ github.sha }}
+          path: |
+            out/make/**/*
+          retention-days: 14
