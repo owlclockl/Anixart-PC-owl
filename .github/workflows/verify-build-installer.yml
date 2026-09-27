@@ -1,0 +1,81 @@
+name: Verify build-installer.bat
+
+# Гоняем сам батник на настоящей Windows, чтобы быть уверенными,
+# что путь от исходников до установщика .exe реально работает.
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'build-installer.bat'
+      - '.github/workflows/verify-build-installer.yml'
+
+jobs:
+  default-build:
+    name: Обычная сборка установщика
+    runs-on: windows-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Справка по параметрам
+        shell: cmd
+        run: build-installer.bat /help
+
+      - name: Сборка установщика
+        shell: cmd
+        run: build-installer.bat /ci
+
+      - name: Что получилось
+        if: always()
+        shell: cmd
+        run: |
+          if exist out\make dir /s /b out\make
+          if exist build.log type build.log
+
+      - name: Upload installer
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: anidesk-installer-${{ github.sha }}
+          path: |
+            out/make/**/*
+          retention-days: 14
+
+  flags-build:
+    name: Сборка с флагами /clean /zip /x64
+    runs-on: windows-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Сборка с флагами
+        shell: cmd
+        run: build-installer.bat /ci /clean /zip /x64
+
+      # dir вернёт ошибку, если файлов нет, значит шаг упадёт
+      - name: Установщик и портативный ZIP на месте
+        shell: cmd
+        run: |
+          dir out\make\squirrel.windows\x64\*.exe
+          dir out\make\*.zip
+
+      - name: Что получилось
+        if: always()
+        shell: cmd
+        run: |
+          if exist out\make dir /s /b out\make
+          if exist build.log type build.log

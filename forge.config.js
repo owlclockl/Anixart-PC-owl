@@ -9,6 +9,10 @@ module.exports = {
     name: "AniDesk",
     appCopyright: "DesConnet, hack1exe",
     icon: "icon/icon",
+    // На Linux deb/rpm мейкеры ищут бинарник с именем пакета в нижнем регистре,
+    // иначе падают с "could not find the Electron app binary".
+    // На Windows и macOS оставляем привычное имя AniDesk.
+    executableName: process.platform === 'linux' ? package.name : 'AniDesk',
   },
   rebuildConfig: {},
   makers: [
